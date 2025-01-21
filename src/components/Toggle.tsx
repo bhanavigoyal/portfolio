@@ -26,13 +26,34 @@ export const Toggle = () => {
   );
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem("isDarkMode") === "true";
-    setIsDarkMode(savedTheme);
-    if (savedTheme) {
-        document.documentElement.classList.add("dark");
-      } else {
-        document.documentElement.classList.remove("dark");
+    const savedTheme = localStorage.getItem("isDarkMode");
+    const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+    if (savedTheme === "true" || (!savedTheme && systemPrefersDark)) {
+      setIsDarkMode(true);
+      document.documentElement.classList.add("dark");
+    } else {
+      setIsDarkMode(false);
+      document.documentElement.classList.remove("dark");
+    }
+  }, []);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = (e: MediaQueryListEvent) => {
+      if (!localStorage.getItem("isDarkMode")) {
+        setIsDarkMode(e.matches);
+        if (e.matches) {
+          document.documentElement.classList.add("dark");
+        } else {
+          document.documentElement.classList.remove("dark");
+        }
       }
+    };
+  
+    mediaQuery.addEventListener("change", handleChange);
+  
+    return () => mediaQuery.removeEventListener("change", handleChange);
   }, []);
 
   const toggleTheme = () => {
